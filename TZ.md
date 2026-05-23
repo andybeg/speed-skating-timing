@@ -4,7 +4,7 @@
 
 **Центральный контроллер:** Raspberry Pi 5 8 GB (единый узел — Hub + фото-финиш).
 
-**Версия:** 0.4.1  
+**Версия:** 0.4.2  
 **Дата:** 2026-05-23  
 **Статус:** черновик
 
@@ -18,6 +18,7 @@
 - двумя режимами старта: **масс-старт** и **по одному**;
 - **управлением и заданием heats** с **смартфона** или **компьютера** (web-UI + API);
 - **фото-финишем** на том же **Raspberry Pi 5**;
+- **гибкой связью** Pi 5 ↔ ESP32: **провод** (UART / RS485) и **WiFi**;
 - заделом под **RFID** без переделки архитектуры.
 
 ---
@@ -37,13 +38,13 @@
 ## 3. Архитектура
 
 ```
-                    WiFi (MQTT/HTTP)              ┌──────────────────────────┐
+                    WiFi или UART/RS485           ┌──────────────────────────┐
 ┌─────────────┐ ────────────────────────────────►│                          │
 │ Start Unit  │                                  │   Raspberry Pi 5 8 GB    │
 │  ESP32-S3   │                                  │   • NTP master           │
 └─────────────┘                                  │   • FastAPI + web-UI     │
                                                  │   • SQLite               │
-┌─────────────┐   UART + GPIO (короткий кабель)  │   • picamera2 120 fps    │
+┌─────────────┐   UART + GPIO (обязательно)      │   • picamera2 120 fps    │
 │Finish Unit  │ ────────────────────────────────►│   • WiFi AP              │
 │  ESP32-S3   │                                  │   • ring buffer          │
 └─────────────┘                                  └────────────┬─────────────┘
@@ -63,10 +64,73 @@
 | Узел | Задача |
 |------|--------|
 | **Pi 5** | Единый центр: события, время, видео, сеть, экспорт |
-| **Finish ESP32** | µs-точность IR; UART + GPIO trigger на Pi 5 |
-| **Start ESP32** | Отсчёт и `START`; WiFi → Pi 5 (или UART, если рядом) |
+| **Finish ESP32** | µs-точность IR; **только провод** (UART + GPIO) на Pi 5 |
+| **Start ESP32** | Отсчёт и `START`; **провод или WiFi** — см. §3.1 |
 
-**Синхронизация:** Pi 5 = единственный master времени. Finish ESP32 — sync-pulse 1 Hz по UART. Start ESP32 — WiFi + периодическая калибровка offset.
+**Синхронизация:** Pi 5 = единственный master времени. ESP32 по UART — sync-pulse 1 Hz. Start по WiFi — периодическая калибровка offset.
+
+### 3.1. Связь Pi 5 ↔ ESP32 (провод / WiFi)
+
+Система поддерживает **несколько вариантов подключения** ESP32. Выбор задаётся при монтаже и в настройках (`transport` в web-UI).
+
+#### Finish Unit — только провод
+
+| Параметр | Значение |
+|----------|----------|
+| Интерфейс | **UART 115200** + **GPIO trigger** (обязательно) |
+| Длина кабеля | 3–10 m ( витая пара или экранированная 4–6 жил) |
+| Подключение к Pi 5 | USB-UART (CH340 / CP2102) + GPIO pin |
+| WiFi | **не используется** (надёжность финиша и фото-финиша) |
+
+GPIO нужен для мгновенной привязки IR-события к кадру камеры; через WiFi это не заменяется.
+
+#### Start Unit — провод или WiFi
+
+| Режим | Когда | Длина | Подключение |
+|-------|-------|-------|-------------|
+| **UART** (рекомендуется) | Старт рядом с финишем | ≤ 10 m | USB-UART на Pi 5 |
+| **RS485** (опция) | Старт далеко, но нужен провод | 50–300 m | Витая пара, RS485-TTL на ESP32 и Pi 5 |
+| **WiFi** (fallback) | Старт далеко, кабель неудобен | ≤ 50 m (прямая видимость) | ESP32-S3 → WiFi AP Pi 5 |
+
+**Dual-mode в прошивке Start Unit:** поддержка `uart` и `wifi`; переключение через web-UI или GPIO-джumper. При обрыве связи — локальный буфер событий (≥ 100).
+
+#### Сводная таблица транспорта
+
+| Узел | UART | GPIO | WiFi | RS485 |
+|------|------|------|------|-------|
+| **Finish** | ✓ обязательно | ✓ обязательно | ✗ | опция v2 |
+| **Start** | ✓ приоритет | — | ✓ fallback | опция v2 |
+
+#### Выбор режима под площадку
+
+| Сценарий | Finish | Start |
+|----------|--------|-------|
+| Спринт, старт = финиш | UART + GPIO | **UART** |
+| Критериум, старт ≤ 10 m | UART + GPIO | **UART** |
+| Кольцо, старт 30–100 m | UART + GPIO | **RS485** или **WiFi** |
+| Быстрый перенос между площадками | UART + GPIO | **WiFi** |
+
+#### Требования к кабельной инфраструктуре (TR)
+
+| ID | Требование |
+|----|------------|
+| TR-01 | Finish Unit → Pi 5: **только провод** (UART + GPIO + общий GND) |
+| TR-02 | Start Unit: **UART приоритетнее WiFi**, если кабель ≤ 10 m |
+| TR-03 | На Pi 5: **2× USB-UART** (отдельный адаптер на каждый ESP32 при проводном режиме) |
+| TR-04 | Кабели полевые: витая пара или мультикор в **защитном канале** / под лентой |
+| TR-05 | Единый протокол JSON-lines на UART, WiFi и RS485 |
+| TR-06 | Web-UI `/api/status`: `finish_link`, `start_link` = `uart \| wifi \| rs485 \| offline` |
+| TR-07 | RS485 — **фаза v2**; в MVP достаточно UART (Finish + Start) и WiFi (Start) |
+| TR-08 | Буфер событий на ESP32 при потере связи (≥ 100), replay после reconnect |
+
+#### Схема проводного подключения (MVP)
+
+```
+Pi 5
+ ├── USB-UART #1 ── TX/RX/GND ──► Finish ESP32
+ │                                 └── GPIO ──► Pi 5 (trigger)
+ └── USB-UART #2 ── TX/RX/GND ──► Start ESP32   (если transport=uart)
+```
 
 ---
 
@@ -82,8 +146,8 @@
 | ST-04 | Двухэтапный запуск: **Arm** → **Start** |
 | ST-05 | Событие `START`: `{ts_us, heat_id, mode, bib?}` |
 | ST-06 | В режиме «по одному» — выбор участника (bib) на клиенте до Arm |
-| ST-07 | Start Unit → Pi 5 по **WiFi** (основной) или UART (если старт у финиша) |
-| ST-08 | Буфер событий на ESP32 при потере WiFi (≥ 100 событий) |
+| ST-07 | Start Unit → Pi 5: **UART** (приоритет), **WiFi** или **RS485** — см. §3.1 |
+| ST-08 | Буфер событий на ESP32 при потере связи (≥ 100), replay после reconnect |
 
 ### 4.2. Финиш
 
@@ -95,7 +159,7 @@
 | FN-04 | Расчёт времени: `t_finish - t_start` |
 | FN-05 | Live-таблица на смартфоне, задержка ≤ 1 с |
 | FN-06 | Экспорт CSV / JSON (WiFi или USB MSC) |
-| FN-07 | Finish Unit → Pi 5 по **UART** (≤ 10 m) + **GPIO trigger** |
+| FN-07 | Finish Unit → Pi 5 **только провод**: UART (≤ 10 m) + **GPIO trigger** |
 
 ### 4.3. Фото-финиш (на Pi 5)
 
@@ -296,15 +360,14 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 
 | Связь | Протокол |
 |-------|----------|
-| Finish ESP32 → Pi 5 | UART 115200, JSON-lines + GPIO trigger |
-| Start ESP32 → Pi 5 | **WiFi:** MQTT или HTTP POST (основной) |
-| Start ESP32 → Pi 5 | UART 115200 (если старт у финиша, ≤ 10 m) |
+| Finish ESP32 → Pi 5 | **UART** 115200, JSON-lines + **GPIO trigger** (обязательно) |
+| Start ESP32 → Pi 5 | **UART** 115200 (приоритет) или **WiFi** MQTT/HTTP или **RS485** (v2) |
+| Pi 5 → Finish ESP32 | UART: конфиг heat, sync-pulse 1 Hz |
+| Pi 5 → Start ESP32 | UART / WiFi / RS485: конфиг heat, команды arm/go |
 | Pi 5 → клиент | REST API + WebSocket / SSE |
-| Pi 5 → Start ESP32 | WiFi: конфиг heat, команды arm/go |
-| Pi 5 → Finish ESP32 | UART: конфиг heat, sync-pulse |
 | RFID → Pi 5 | USB serial |
 
-**Sync-pulse:** Pi 5 → Finish ESP32, 1 Hz по UART.
+**Sync-pulse:** Pi 5 → ESP32 по UART, 1 Hz (калибровка drift). На Start в режиме WiFi — дополнительно HTTP ping раз в 10 с.
 
 ### Команды клиента → Pi 5
 
@@ -364,6 +427,7 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | Позиция | Qty |
 |---------|-----|
 | Raspberry Pi 5 8 GB | 1 |
+| USB-UART адаптер (CH340 / CP2102) | 2 |
 | Pi Camera Module 3 | 1 |
 | Flat CSI-кабель 30–50 cm | 1 |
 | microSD 64 GB A2 | 1 |
@@ -383,7 +447,7 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | Кнопки Arm / Start | 2 |
 | Корпус IP65 | 1 |
 | БП 5 V (USB или powerbank) | 1 |
-| Кабель UART (опционально, если старт у финиша) | 1 |
+| Кабель UART к Pi 5, 5–10 m (витая пара / мультикор) | 1 |
 
 ### 8.3. Finish Unit
 
@@ -405,7 +469,16 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | Ethernet-кабель (Pi 5 ↔ ноутбук, опционально) | 1 |
 | Конуса, лента разметки | — |
 
-### 8.5. Опция RFID (фаза 2)
+### 8.6. Опция RS485 (фаза v2)
+
+| Позиция | Qty |
+|---------|-----|
+| MAX485 / SN65HVD модуль | 2 |
+| Витая пара в экране, 50–300 m | 1 |
+
+---
+
+### 8.7. Опция RFID (фаза 2)
 
 | Позиция | Qty |
 |---------|-----|
@@ -425,7 +498,7 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | Frontend | HTMX / лёгкий SPA: **mobile** (starter, live) + **desktop** (editor, CSV) |
 | Auth | PIN / role-based session (без внешних сервисов) |
 | ESP32 finish | Arduino / ESP-IDF; ISR `micros()` + JSON UART |
-| ESP32 start | WiFi: конфиг heat, arm/go + локальный буфер событий |
+| ESP32 start | Dual transport: UART (приоритет) / WiFi / RS485 (v2); буфер + replay |
 | Сервисы | `timing.service`, `chrony`, `avahi` (mDNS) |
 | USB gadget | `usb0` RNDIS (опционально, для прямого подключения ноутбука) |
 
@@ -489,8 +562,9 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | Pi 5 — single point of failure | ESP32 буферизует события; автосохранение SQLite; clip на SD |
 | Перегрев Pi 5 (камера + WiFi + лето) | Активное охлаждение, тень, throttling monitor |
 | Просадка 5 V | БП / powerbank **5 A**, короткий USB-C |
-| Старт далеко от финиша | WiFi на Start ESP32; внешняя антенна при необходимости |
-| Потеря WiFi (UI) | Критичные события: UART (finish) + ESP32 buffer (start) |
+| Старт далеко от финиша | **RS485** (v2) или **WiFi** на Start ESP32; внешняя антенна |
+| Потеря WiFi (UI / Start) | Finish всегда по UART; Start: UART или буфер + replay |
+| Кабель через трассу | Защитный канал / лента; не на проезжей части |
 | Rolling shutter | 120 fps; при необходимости — GS USB-камера |
 | Ложные IR | Debounce 1–2 ms; двойной луч (v2) |
 | Случайное управление с чужого телефона | PIN на WiFi AP + role PIN для arm/go |
@@ -505,7 +579,9 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 - [ ] Масс-старт и старт по одному — 10 заездов без сбоев
 - [ ] 4 полосы финиша различаются корректно
 - [ ] Pi 5: 120 fps ≥ 5 мин, clip по GPIO, IR ↔ frame привязаны
-- [ ] Start Unit работает по WiFi при расстоянии ≥ 30 m до Pi 5
+- [ ] Finish Unit: только UART + GPIO; Start Unit: UART **и** WiFi (оба режима проверены)
+- [ ] `/api/status` показывает `finish_link=uart`, `start_link=uart|wifi`
+- [ ] Start Unit по WiFi при расстоянии ≥ 30 m; по UART при кабеле 10 m
 - [ ] Смартфон: live ≤ 1 с; фото-финиш в том же UI ≤ 3 с
 - [ ] Экспорт CSV: `bib`, `lane`, `time`, `mode`, `final_source`
 - [ ] Автономность 4 ч; работа без интернета
@@ -521,11 +597,12 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | 0.3 | Zero убран; все функции на одном RPi 5; Start по WiFi |
 | 0.4 | Управление Pi 5 с ПК и смартфона: роли, CRUD heats, API, команды arm/go |
 | 0.4.1 | Убран обосновывающий раздел «Zero vs Pi 5»; перенумерация разделов |
+| 0.4.2 | **§3.1 Связь Pi 5 ↔ ESP32:** провод (UART/RS485) + WiFi; Finish только провод |
 
 ---
 
-## 15. Дальше (не в scope v0.4.1)
+## 15. Дальше (не в scope v0.4.2)
 
 - Pinout ESP32 (start / finish) + GPIO Pi 5
-- Формат UART/WiFi-пакетов, схема SQLite, OpenAPI spec
-- Монтаж финишной рамы и калибровка IR
+- Формат UART / WiFi / RS485-пакетов, схема SQLite, OpenAPI spec
+- Монтаж финишной рамы, калибровка IR, схема RS485-bus (v2)
