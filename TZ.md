@@ -4,9 +4,11 @@
 
 **Функциональное описание (без техн. деталей):** [functional.md](functional.md)
 
+**Стартовый модуль:** [start-unit.md](start-unit.md) · **Камера фото-финиша:** [camera.md](camera.md)
+
 **Центральный контроллер:** Raspberry Pi 5 8 GB (единый узел — Hub + фото-финиш).
 
-**Версия:** 0.4.4  
+**Версия:** 0.4.5  
 **Дата:** 2026-05-23  
 **Статус:** черновик
 
@@ -31,7 +33,7 @@
 
 | Блок | Платформа | Назначение |
 |------|-----------|------------|
-| **Central (Hub + Photo)** | Raspberry Pi 5 8 GB + Pi Camera 3 | Протокол, WiFi, UI, SQLite, 120 fps, фото-финиш |
+| **Central (Hub + Photo)** | Raspberry Pi 5 8 GB + Pi Camera 3 | Протокол, WiFi, UI, SQLite, 120 fps, фото-финиш — см. [camera.md](camera.md) |
 | **Start Unit** | ESP32-S3 | Отсчёт, сигнал, фиксация старта — см. [start-unit.md](start-unit.md) |
 | **Finish Unit** | ESP32-S3 | IR-барьеры по полосам, timestamp пересечения |
 | **Клиент** | Смартфон / ноутбук / планшет | Управление Pi 5, heats, live, фото-финиш |
@@ -170,6 +172,8 @@ Pi 5
 | FN-07 | Finish Unit → Pi 5 **только провод**: UART (≤ 10 m) + **GPIO trigger** |
 
 ### 4.3. Фото-финиш (на Pi 5)
+
+> Выбор камеры, монтаж, конфигурация: **[camera.md](camera.md)**
 
 | ID | Требование |
 |----|------------|
@@ -432,6 +436,8 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 
 ### 8.1. Central (Pi 5)
 
+> Камера и монтаж: [camera.md §8](camera.md#8-спецификация-железа-bom)
+
 | Позиция | Qty |
 |---------|-----|
 | Raspberry Pi 5 8 GB | 1 |
@@ -575,7 +581,7 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | Старт далеко от финиша | **RS485** (v2) или **WiFi** на Start ESP32; внешняя антенна |
 | Потеря WiFi (UI / Start) | Finish всегда по UART; Start: UART или буфер + replay |
 | Кабель через трассу | Защитный канал / лента; не на проезжей части |
-| Rolling shutter | 120 fps; при необходимости — GS USB-камера |
+| Rolling shutter | 120 fps; при необходимости — GS USB-камера — см. [camera.md §5.2](camera.md#52-global-shutter-usb-апгрейд) |
 | Ложные IR | Debounce 1–2 ms; двойной луч (v2) |
 | Случайное управление с чужого телефона | PIN на WiFi AP + role PIN для arm/go |
 | Потеря связи клиента mid-heat | Heat и события на Pi 5; reconnect WebSocket без потери данных |
@@ -610,12 +616,14 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | 0.4.2 | **§3.1 Связь Pi 5 ↔ ESP32:** провод (UART/RS485) + WiFi; Finish только провод |
 | 0.4.3 | Вынесен **[start-unit.md](start-unit.md)** — описание стартового модуля |
 | 0.4.4 | Вынесен **[functional.md](functional.md)** — функциональное описание без техн. деталей |
+| 0.4.5 | Вынесен **[camera.md](camera.md)** — камера фото-финиша |
 
 ---
 
-## 15. Дальше (не в scope v0.4.4)
+## 15. Дальше (не в scope v0.4.5)
 
 - [start-unit.md](start-unit.md): финальный pinout, схема подключения периферии
+- [camera.md](camera.md): ROI под 4 полосы, калибровка overlay, бенчмарк GS USB
 - Finish Unit — отдельный документ (аналог start-unit.md)
 - Формат UART / WiFi / RS485-пакетов, схема SQLite, OpenAPI spec
 - Монтаж финишной рамы, калибровка IR, схема RS485-bus (v2)
