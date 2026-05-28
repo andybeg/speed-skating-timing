@@ -1,0 +1,3 @@
+[submodule "start-finish-module"]
+	path = start-finish-module
+	url = git@gitflic.ru:andybeg/start-finish-module.git
