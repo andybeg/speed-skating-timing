@@ -4,11 +4,13 @@
 
 **Функциональное описание (без техн. деталей):** [functional.md](functional.md)
 
-**Старт / финиш (ESP32):** [start-finish-module](start-finish-module/) · **Камера фото-финиша:** [camera.md](camera.md)
+**Стартовый модуль:** [start-unit.md](start-unit.md) · **Камера фото-финиша:** [camera.md](camera.md)
 
 **Центральный контроллер:** Raspberry Pi 5 8 GB (единый узел — Hub + фото-финиш).
 
-**Версия:** 0.4.6  
+**Репозитории:** [GitHub](https://github.com/andybeg/speed-skating-timing) · [GitFlic](https://gitflic.ru/project/andybeg/speed-skating-timing)
+
+**Версия:** 0.4.7  
 **Дата:** 2026-05-28  
 **Статус:** черновик
 
@@ -34,7 +36,7 @@
 | Блок | Платформа | Назначение |
 |------|-----------|------------|
 | **Central (Hub + Photo)** | Raspberry Pi 5 8 GB + Pi Camera 3 | Протокол, WiFi, UI, SQLite, 120 fps, фото-финиш — см. [camera.md](camera.md) |
-| **Start Unit** | ESP32-S3 | Отсчёт, сигнал, фиксация старта — см. [start-finish-module/start-unit.md](start-finish-module/start-unit.md) |
+| **Start Unit** | ESP32-S3 | Отсчёт, сигнал, фиксация старта — см. [start-unit.md](start-unit.md) |
 | **Finish Unit** | ESP32-S3 | IR-барьеры по полосам, timestamp пересечения |
 | **Клиент** | Смартфон / ноутбук / планшет | Управление Pi 5, heats, live, фото-финиш |
 | **Опция: RFID** | UHF-ридер | Финишная рама, USB → Pi 5 |
@@ -71,7 +73,7 @@
 |------|--------|
 | **Pi 5** | Единый центр: события, время, видео, сеть, экспорт |
 | **Finish ESP32** | µs-точность IR; **только провод** (UART + GPIO) на Pi 5 |
-| **Start ESP32** | Отсчёт и `START`; **провод или WiFi** — см. [start-finish-module/start-unit.md](start-finish-module/start-unit.md), [§3.1](#31-связь-pi-5--esp32-провод--wifi) |
+| **Start ESP32** | Отсчёт и `START`; **провод или WiFi** — см. [start-unit.md](start-unit.md), [§3.1](#31-связь-pi-5--esp32-провод--wifi) |
 
 **Синхронизация:** Pi 5 = единственный master времени. ESP32 по UART — sync-pulse 1 Hz. Start по WiFi — периодическая калибровка offset.
 
@@ -92,7 +94,7 @@ GPIO нужен для мгновенной привязки IR-события �
 
 #### Start Unit — провод или WiFi
 
-Подробное описание модуля: **[start-finish-module/start-unit.md](start-finish-module/start-unit.md)**.
+Подробное описание модуля: **[start-unit.md](start-unit.md)**.
 
 | Режим | Когда | Длина | Подключение |
 |-------|-------|-------|-------------|
@@ -146,7 +148,7 @@ Pi 5
 
 ### 4.1. Старт
 
-> Детальная спецификация Start Unit: [start-finish-module/start-unit.md](start-finish-module/start-unit.md)
+> Детальная спецификация Start Unit: [start-unit.md](start-unit.md)
 
 | ID | Требование |
 |----|------------|
@@ -453,7 +455,7 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 
 ### 8.2. Start Unit
 
-> Полное описание: [start-finish-module/start-unit.md](start-finish-module/start-unit.md)
+> Полное описание: [start-unit.md](start-unit.md)
 
 | Позиция | Qty |
 |---------|-----|
@@ -614,17 +616,17 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | 0.4 | Управление Pi 5 с ПК и смартфона: роли, CRUD heats, API, команды arm/go |
 | 0.4.1 | Убран обосновывающий раздел «Zero vs Pi 5»; перенумерация разделов |
 | 0.4.2 | **§3.1 Связь Pi 5 ↔ ESP32:** провод (UART/RS485) + WiFi; Finish только провод |
-| 0.4.3 | Вынесен **start-unit.md** — описание стартового модуля (см. [start-finish-module](start-finish-module/)) |
+| 0.4.3 | Вынесен **[start-unit.md](start-unit.md)** — описание стартового модуля |
 | 0.4.4 | Вынесен **[functional.md](functional.md)** — функциональное описание без техн. деталей |
 | 0.4.5 | Вынесен **[camera.md](camera.md)** — камера фото-финиша |
-| 0.4.6 | Модули Start/Finish — submodule [start-finish-module](start-finish-module/) ([GitFlic](https://gitflic.ru/project/andybeg/start-finish-module)) |
+| 0.4.7 | Зеркало репозитория на [GitFlic](https://gitflic.ru/project/andybeg/speed-skating-timing) (основной — GitHub) |
 
 ---
 
-## 15. Дальше (не в scope v0.4.6)
+## 15. Дальше (не в scope v0.4.7)
 
-- [start-finish-module/start-unit.md](start-finish-module/start-unit.md): финальный pinout, схема подключения периферии
+- [start-unit.md](start-unit.md): финальный pinout, схема подключения периферии
 - [camera.md](camera.md): ROI под 4 полосы, калибровка overlay, бенчмарк GS USB
-- [start-finish-module/finish-unit.md](start-finish-module/finish-unit.md): полная спецификация Finish Unit
+- Finish Unit — отдельный документ (аналог start-unit.md)
 - Формат UART / WiFi / RS485-пакетов, схема SQLite, OpenAPI spec
 - Монтаж финишной рамы, калибровка IR, схема RS485-bus (v2)
