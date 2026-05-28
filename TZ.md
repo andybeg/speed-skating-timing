@@ -4,13 +4,13 @@
 
 **Функциональное описание (без техн. деталей):** [functional.md](functional.md)
 
-**Стартовый модуль:** [start-unit.md](start-unit.md) · **Камера фото-финиша:** [camera.md](camera.md)
+**Стартовый модуль:** [start-unit.md](start-unit.md) · **Камера фото-финиша:** [camera.md](camera.md) · **Транспондеры (RFID):** [rfid-transponders.md](rfid-transponders.md)
 
 **Центральный контроллер:** Raspberry Pi 5 8 GB (единый узел — Hub + фото-финиш).
 
 **Репозитории:** [GitHub](https://github.com/andybeg/speed-skating-timing) · [GitFlic](https://gitflic.ru/project/andybeg/speed-skating-timing)
 
-**Версия:** 0.4.7  
+**Версия:** 0.4.9  
 **Дата:** 2026-05-28  
 **Статус:** черновик
 
@@ -331,6 +331,8 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 
 ### 4.6. Расширение (RFID)
 
+> Подробно: **[rfid-transponders.md](rfid-transponders.md)** — принцип работы, типы меток, интеграция с Pi 5, поставщики в РФ/Москве.
+
 | ID | Требование |
 |----|------------|
 | EX-01 | Единый формат событий: `START \| FINISH \| RFID \| PHOTO` |
@@ -498,6 +500,8 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 
 ### 8.7. Опция RFID (фаза 2)
 
+> Закупка и рынок РФ: [rfid-transponders.md §5](rfid-transponders.md#5-рынок-россии-и-москвы).
+
 | Позиция | Qty |
 |---------|-----|
 | UHF reader (R2000 / R500) | 1 |
@@ -620,6 +624,8 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | 0.4.4 | Вынесен **[functional.md](functional.md)** — функциональное описание без техн. деталей |
 | 0.4.5 | Вынесен **[camera.md](camera.md)** — камера фото-финиша |
 | 0.4.7 | Зеркало репозитория на [GitFlic](https://gitflic.ru/project/andybeg/speed-skating-timing) (основной — GitHub) |
+| 0.4.8 | Вынесен **[rfid-transponders.md](rfid-transponders.md)** — UHF-транспондеры, рынок РФ/Москвы |
+| 0.4.9 | Субмодуль **[rfid-diy](https://gitflic.ru/project/andybeg/rfid-diy)** — DIY-проекты RFID (GitFlic) |
 
 ---
 

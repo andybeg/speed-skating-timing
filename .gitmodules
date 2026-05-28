@@ -1,0 +1,3 @@
+[submodule "rfid-diy"]
+	path = rfid-diy
+	url = git@gitflic.ru:andybeg/rfid-diy.git

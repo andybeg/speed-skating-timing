@@ -10,6 +10,8 @@
 | [functional.md](functional.md) | Функциональное описание |
 | [start-unit.md](start-unit.md) | Стартовый модуль (ESP32) |
 | [camera.md](camera.md) | Камера фото-финиша |
+| [rfid-transponders.md](rfid-transponders.md) | UHF-транспондеры (RFID), фаза 2, рынок РФ |
+| [rfid-diy/](rfid-diy/README.md) | DIY-проекты RFID-хронометража (подробно по каждому) |
 
 ## Репозитории
 
@@ -19,9 +21,11 @@
 | **GitFlic** (зеркало) | https://gitflic.ru/project/andybeg/speed-skating-timing | `gitflic` |
 
 ```bash
-git clone git@github.com:andybeg/speed-skating-timing.git
+git clone --recurse-submodules git@github.com:andybeg/speed-skating-timing.git
 # или
-git clone git@gitflic.ru:andybeg/speed-skating-timing.git
+git clone --recurse-submodules git@gitflic.ru:andybeg/speed-skating-timing.git
 ```
+
+Субмодули: [rfid-diy](https://gitflic.ru/project/andybeg/rfid-diy) (DIY RFID, GitFlic). Если клонировали без `--recurse-submodules`: `git submodule update --init`.
 
 Синхронизация зеркала на GitFlic: `git push gitflic main`
