@@ -4,7 +4,7 @@
 
 **Функциональное описание (без техн. деталей):** [functional.md](functional.md)
 
-**Стартовый модуль:** [start-unit.md](start-unit.md) · **Камера фото-финиша:** [camera.md](camera.md) · **Транспондеры (RFID):** [rfid-transponders.md](rfid-transponders.md)
+**Стартовый модуль:** [start-unit.md](start-unit.md) · **Камера:** [camera.md](camera.md) · **Смета без RFID:** [cost-mvp-no-rfid.md](cost-mvp-no-rfid.md) · **Закупка Москва:** [moscow-components.md](moscow-components.md) · **RFID:** [rfid-transponders.md](rfid-transponders.md)
 
 **Центральный контроллер:** Raspberry Pi 5 8 GB (единый узел — Hub + фото-финиш).
 
@@ -530,6 +530,8 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 ---
 
 ## 10. Смета (ориентир, ₽)
+
+> Если **Pi 5 уже куплен** (например за 12 000 ₽) и RFID не нужен — детальная разбивка: **[cost-mvp-no-rfid.md](cost-mvp-no-rfid.md)**. Поставщики и датчики линии в Москве: **[moscow-components.md](moscow-components.md)**.
 
 ### Полный комплект (Pi 5 + старт + финиш)
 

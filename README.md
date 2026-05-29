@@ -10,6 +10,8 @@
 | [functional.md](functional.md) | Функциональное описание |
 | [start-unit.md](start-unit.md) | Стартовый модуль (ESP32) |
 | [camera.md](camera.md) | Камера фото-финиша |
+| [cost-mvp-no-rfid.md](cost-mvp-no-rfid.md) | Смета MVP без RFID (Pi 5 уже куплен) |
+| [moscow-components.md](moscow-components.md) | Компоненты в Москве, датчики линии, камера 120 fps |
 | [rfid-transponders.md](rfid-transponders.md) | UHF-транспондеры (RFID), фаза 2, рынок РФ |
 | [rfid-diy/](rfid-diy/README.md) | DIY-проекты RFID-хронометража (подробно по каждому) |
 
