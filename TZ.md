@@ -10,7 +10,7 @@
 
 **Репозитории:** [GitHub](https://github.com/andybeg/speed-skating-timing) · [GitFlic](https://gitflic.ru/project/andybeg/speed-skating-timing)
 
-**Версия:** 0.4.9  
+**Версия:** 0.5.0  
 **Дата:** 2026-05-28  
 **Статус:** черновик
 
@@ -36,7 +36,7 @@
 | Блок | Платформа | Назначение |
 |------|-----------|------------|
 | **Central (Hub + Photo)** | Raspberry Pi 5 8 GB + Pi Camera 3 | Протокол, WiFi, UI, SQLite, 120 fps, фото-финиш — см. [camera.md](camera.md) |
-| **Start Unit** | ESP32-S3 | Отсчёт, сигнал, фиксация старта — см. [start-unit.md](start-unit.md) |
+| **Start Unit** | ESP32-S3 *(рекомендуется)* | Отсчёт, сигнал, фиксация старта — [start-unit.md](start-unit.md) (допустим ESP32 при UART-only) |
 | **Finish Unit** | ESP32-S3 | IR-барьеры по полосам, timestamp пересечения |
 | **Клиент** | Смартфон / ноутбук / планшет | Управление Pi 5, heats, live, фото-финиш |
 | **Опция: RFID** | UHF-ридер | Финишная рама, USB → Pi 5 |
@@ -457,11 +457,11 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 
 ### 8.2. Start Unit
 
-> Полное описание: [start-unit.md](start-unit.md)
+> Полное описание: [start-unit.md](start-unit.md) · альтернатива MCU: [§4.1.2](start-unit.md#412-esp32-s3-обязателен-нет-альтернативы)
 
 | Позиция | Qty |
 |---------|-----|
-| ESP32-S3-WROOM-1-N16R8, DevKitC-1 v1.1 | 1 |
+| ESP32-S3-WROOM-1-N16R8, DevKitC-1 v1.1 **или** ESP32-WROOM-32 (MVP-UART) | 1 |
 | LED-матрица 8×8 или 4× 7-segment | 1 |
 | Зуммер 5 V | 1 |
 | Кнопки Arm / Start | 2 |
@@ -626,6 +626,7 @@ Pi 5 рассылает конфиг Start / Finish ESP32 и переводит 
 | 0.4.7 | Зеркало репозитория на [GitFlic](https://gitflic.ru/project/andybeg/speed-skating-timing) (основной — GitHub) |
 | 0.4.8 | Вынесен **[rfid-transponders.md](rfid-transponders.md)** — UHF-транспондеры, рынок РФ/Москвы |
 | 0.4.9 | Субмодуль **[rfid-diy](https://gitflic.ru/project/andybeg/rfid-diy)** — DIY-проекты RFID (GitFlic) |
+| 0.5.0 | [start-unit.md](start-unit.md): ESP32-S3 рекомендуется, не обязателен; MVP-UART на ESP32-классике |
 
 ---
 
