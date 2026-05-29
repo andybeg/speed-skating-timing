@@ -217,7 +217,7 @@ flowchart LR
 
 > **Важно:** «Самодельный транспондер» на практике почти всегда означает **самодельную систему считывания** + **покупные пассивные метки** (EPC Gen2). Сам чип/antenna inlay дома не изготавливают — покупают foam-bib, Dogbone, NTAG и т.п.
 
-**Подробные описания (принцип работы, состав, ограничения):** субмодуль **[rfid-diy/](rfid-diy/README.md)** ([gitflic.ru/project/andybeg/rfid-diy](https://gitflic.ru/project/andybeg/rfid-diy)) — отдельный файл на каждый проект.
+**Подробные описания (принцип работы, состав, ограничения):** субмодуль **[rfid-diy/](rfid-diy/README.md)** ([gitflic.ru/project/andybeg/rfid-diy](https://gitflic.ru/project/andybeg/rfid-diy)) — отдельный файл на каждый проект. **Дальность считывания:** [rfid-diy/components-reference.md#дальность-считывания](rfid-diy/components-reference.md#дальность-считывания).
 
 ### 9.1. UHF (860–960 MHz) — ближе к нашему ТЗ
 
